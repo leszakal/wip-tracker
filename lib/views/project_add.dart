@@ -27,7 +27,16 @@ class _ProjectAddState extends State<ProjectAdd> {
         leading: BackButton(),
       ),
       body: Center(
-        AddForm(formType: 'project');
+        child: AddForm(formType: 'project'),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Redirect to projects page
+          Navigator.pop(context);
+        },
+        tooltip: "Finish editing and add project",
+        label: const Text('Done'),
+        icon: const Icon(Icons.arrow_back),
       ),
     );
   }
