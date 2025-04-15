@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../models/project.dart';
+import '../project/data/project.dart';
 
 class LocalStorage {
   late Database db;
@@ -14,7 +14,8 @@ class LocalStorage {
         await db.execute('''
 CREATE TABLE projects (
   id INT PRIMARY KEY AUTOINCREMENT, 
-  title TEXT NOT NULL, 
+  title TEXT NOT NULL,
+  image TEXT, 
   description TEXT, 
   notes TEXT,
   start INT NOT NULL,
@@ -38,12 +39,12 @@ CREATE TABLE projects (
   Future<List<Project>?> getProjects() async {
     final List<Map<String, Object?>> projectMaps = await db.query('projects');
     return [
-      for (final {'id': id as int, 'title': title as String, 
+      for (final {'id': id as int, 'title': title as String, 'image': image as String, 
         'description': description as String, 'notes': notes as String,
         'start': start as int, 'end': end as int, 'complete': complete as bool
         } in projectMaps)
       Project(
-        id: id, title: title, description: description, notes: notes,
+        id: id, title: title, image: image, description: description, notes: notes,
         start: DateTime.fromMicrosecondsSinceEpoch(start), end: DateTime.fromMicrosecondsSinceEpoch(end), 
         complete: complete,
       ),

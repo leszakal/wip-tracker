@@ -3,6 +3,7 @@ import '../../stage/data/stage.dart';
 class Project {
   final int id;
   final String title;
+  final String? image;
   final String? description;
   final String? notes;
   final List<String>? tags;
@@ -15,6 +16,7 @@ class Project {
     required this.id,
     required this.title,
     required this.start,
+    this.image,
     this.description,
     this.notes,
     this.tags,
@@ -28,6 +30,7 @@ class Project {
       'id': id,
       'title': title,
       'start': start.millisecondsSinceEpoch,
+      'image': image,
       'description': description,
       'notes': notes,
       'end': end?.millisecondsSinceEpoch,
