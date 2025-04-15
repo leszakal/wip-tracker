@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 //import 'firebasestorage.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'drawer.dart';
-import '../models/project.dart';
-import '../models/stage.dart';
-import '../widgets/add_form.dart';
+import '../../interface/drawer.dart';
+import '../data/project.dart';
+import '../../stage/data/stage.dart';
+import 'project_form.dart';
 
 class ProjectAdd extends StatefulWidget {
   const ProjectAdd({super.key});
@@ -27,7 +27,9 @@ class _ProjectAddState extends State<ProjectAdd> {
         leading: BackButton(),
       ),
       body: Center(
-        child: AddForm(formType: 'project'),
+        child: SingleChildScrollView(
+          child: AddForm(formType: 'add'),
+        )
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

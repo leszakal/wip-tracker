@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:firebase_core/firebase_core.dart';
 
-import 'views/project_list.dart';
-import 'views/project_add.dart';
+import 'project/widgets/project_list.dart';
+import 'project/widgets/project_add.dart';
 // import 'firebase_options.dart';
 // import 'home.dart';
 
