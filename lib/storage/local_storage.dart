@@ -1,7 +1,9 @@
 import 'dart:async';
-
+import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path_provider/path_provider.dart';
+
 import '../project/data/project.dart';
 
 class LocalStorage {
@@ -10,25 +12,45 @@ class LocalStorage {
   Future open(String path) async {
     db = await openDatabase(
       join(await getDatabasesPath(), path), version: 1,
+      onConfigure: (Database db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (Database db, int version) async {
         await db.execute('''
-CREATE TABLE projects (
-  id INT PRIMARY KEY AUTOINCREMENT, 
-  title TEXT NOT NULL,
-  image TEXT, 
-  description TEXT, 
-  notes TEXT,
-  start INT NOT NULL,
-  end INT,
-  complete BOOL,
-  ))
-''');
+          CREATE TABLE projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            title TEXT NOT NULL,
+            image TEXT, 
+            description TEXT, 
+            notes TEXT,
+            start INTEGER NOT NULL,
+            end INTEGER,
+            complete INTEGER
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE tags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            count INTEGER DEFAULT 0
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE project_tags (
+            project_id INTEGER,
+            tag_id INTEGER,
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE,
+            FOREIGN KEY(tag_id) REFERENCES tags(id) ON DELETE CASCADE
+          )
+        ''');
       }
     );
   }
 
-  Future<void> insertProject(Project project) async {
-    await db.insert(
+  Future<int> insertProject(Project project) async {
+    return await db.insert(
       'projects',
       project.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -36,18 +58,113 @@ CREATE TABLE projects (
   }
 
   // https://docs.flutter.dev/cookbook/persistence/sqlite
-  Future<List<Project>?> getProjects() async {
-    final List<Map<String, Object?>> projectMaps = await db.query('projects');
+  Future<List<Project>> getProjects() async {
+    final List<Map<String, Object?>> projectMaps = await db.query('projects', orderBy: 'start DESC');
+    if (projectMaps.isEmpty) {
+      return [];
+    }
+
     return [
-      for (final {'id': id as int, 'title': title as String, 'image': image as String, 
-        'description': description as String, 'notes': notes as String,
-        'start': start as int, 'end': end as int, 'complete': complete as bool
+      for (final {'id': id as int, 'title': title as String, 'image': image as String?, 
+        'description': description as String?, 'notes': notes as String?,
+        'start': start as int, 'end': end as int?, 'complete': complete as int,
         } in projectMaps)
       Project(
         id: id, title: title, image: image, description: description, notes: notes,
-        start: DateTime.fromMicrosecondsSinceEpoch(start), end: DateTime.fromMicrosecondsSinceEpoch(end), 
-        complete: complete,
+        start: DateTime.fromMicrosecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMicrosecondsSinceEpoch(end), 
+        complete: complete == 1 ? true : false, tags: await getProjectTags(id),
       ),
     ];
   }
+
+  Future<void> updateProject(Project project) async {
+    await db.update(
+      'projects',
+      project.toMap(),
+      where: 'id = ?',
+      whereArgs: [project.id],
+    );
+    
+    // Delete current project_tags
+    await db.delete(
+      'project_tags',
+      where: 'project_id = ?',
+      whereArgs: [project.id],
+    );
+
+    // Add updated tags
+    await insertTags(project.id!, project.tags!);
+  }
+
+  Future<void> deleteProject(int id) async {
+    await db.delete(
+      'projects',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> insertTags(int pid, List<String> tags) async {
+    final batch = db.batch();
+
+    for (String tag in tags) {
+      // Check if there are any tags with the same name already
+      List<Map> results = await db.query(
+        'tags',
+        where: 'name = ?',
+        whereArgs: [tag],
+      );
+
+      int tid, curCount;
+      if (results.isEmpty) {
+        tid = await db.insert(
+          'tags', 
+          {'name': tag, 'count': 1}
+        );
+      }
+      else {
+        tid = results.first['id'];
+        curCount = results.first['count'];
+        // increment tag count
+        await db.update(
+          'tags', 
+          {'count': curCount + 1},
+          where: 'id = ?',
+          whereArgs: [tid],
+        );
+      }
+
+      await db.insert(
+        'project_tags', 
+        {'project_id': pid, 'tag_id': tid}
+      );
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<List<String>> getProjectTags(int pid) async {
+    final List<Map<String, Object?>> tagMaps = await db.rawQuery('''
+      SELECT tags.name FROM tags
+      JOIN project_tags ON tags.id = project_tags.tag_id
+      WHERE project_tags.project_id = ?
+    ''', [pid]);
+
+    return [
+      for (final {'name': name as String} in tagMaps) name
+    ];
+  }
+
+}
+
+Future<String> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  return directory.path;
+}
+
+Future<String> saveImageLocally(File imageFile, String imagePath) async {
+  final path = await _localPath;
+  String imageName = basename(imagePath);
+  await imageFile.copy('$path/$imageName');
+  return '$path/$imageName';
 }

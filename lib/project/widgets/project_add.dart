@@ -18,6 +18,7 @@ class ProjectAdd extends StatefulWidget {
 }
 
 class _ProjectAddState extends State<ProjectAdd> {
+  final GlobalKey<ProjectFormState> _projectFormKey = GlobalKey<ProjectFormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,13 +29,19 @@ class _ProjectAddState extends State<ProjectAdd> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          child: AddForm(formType: 'add'),
+          child: ProjectForm(key: _projectFormKey, formType: 'add'),
         )
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Redirect to projects page
-          Navigator.pop(context);
+        onPressed: () async {
+          await _projectFormKey.currentState?.submitForm().then((value) {
+            if (value == true && context.mounted) {
+              Navigator.pop(context, true);
+            }
+            else {
+              SnackBar(content: Text('ERROR: Failed to submit form'));
+            }
+          });
         },
         tooltip: "Finish editing and add project",
         label: const Text('Done'),

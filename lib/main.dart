@@ -18,7 +18,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const ProjectList(title: 'Projects'),
+      builder: (context, state) => const ProjectList(),
     ),
     GoRoute(
       path: '/add-project',

@@ -2,27 +2,43 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wip_tracker/project/widgets/default_tags.dart';
 
 import '../../image/image_upload.dart';
 import '../../storage/local_storage.dart';
 import '../../image/image_placeholder.dart';
+import '../data/project.dart';
 
-class AddForm extends StatefulWidget {
-  const AddForm({super.key, required this.formType});
+class ProjectForm extends StatefulWidget {
+  const ProjectForm({super.key, required this.formType});
   final String formType;
 
   @override
-  State<AddForm> createState() => _AddFormState();
+  State<ProjectForm> createState() => ProjectFormState();
 }
 
-class _AddFormState extends State<AddForm> {
+class ProjectFormState extends State<ProjectForm> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _dateController = TextEditingController();
   final _descController = TextEditingController();
   final _notesController = TextEditingController();
   final _customTagsController = TextEditingController();
+  final _localStorage = LocalStorage();
 
   XFile? image;
+  String? startDate;
+
+  Map<String, bool> defaultTags = {
+    'art': false,
+    'drawing': false, 
+    'painting': false, 
+    'pottery': false, 
+    'woodwork': false, 
+    'ceramics': false, 
+    'printmaking': false, 
+    'knitting': false,
+  };
   
   String? _validateTitle(String? value) {
     if (value == null || value.isEmpty) {
@@ -34,16 +50,91 @@ class _AddFormState extends State<AddForm> {
     return null;
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      
+  String? _validateDate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please select a start date';
     }
+    return null;
+  }
+
+  Future<bool> submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      String? imagePath;
+      if (image != null && !kIsWeb) {
+        imagePath = await saveImageLocally(File(image!.path), image!.path);
+      }
+      final project = Project(
+        title: _titleController.text,
+        start: DateTime.now(),
+        image: imagePath,
+        description: _descController.text,
+        notes: _notesController.text,
+      );
+      
+      // Tag handling
+      List<String> customTags = _normalizeCustomTags(_customTagsController.text);
+      List<String> tags = gatherTags(customTags, defaultTags);
+
+      // Local db updates
+      if (!kIsWeb) {
+        await _localStorage.open('wip_tracker.db');
+        int pid = await _localStorage.insertProject(project);
+        await _localStorage.insertTags(pid, tags);
+      }
+
+      return true;
+    }
+    return false;
   }
 
   void onImageSelect(XFile selectedImage) {
     setState(() {
       image = selectedImage;
     });
+  }
+
+  void toggleTag(String tag) {
+    setState(() {
+      defaultTags[tag] = !defaultTags[tag]!;
+    });
+  }
+
+  // void onDateSelect(DateTime selectedDate) {
+  //   String selectedDateString = 
+  //   setState(() {
+  //     startDate = selectedDateString;
+  //   });
+  // }
+
+  List<String> _normalizeCustomTags(String customTagsText) {
+    List<String> tags = customTagsText.split(',');
+    List<String> normalizedTags = [];
+    for (String tag in tags) {
+      if (tag != '') {
+        tag = tag.trim();
+        tag = tag.toLowerCase();
+        normalizedTags.add(tag);
+      }
+    }
+    return normalizedTags;
+  }
+
+  List<String> gatherTags(List<String> customTags, Map<String, bool> defaultTags) {
+    List<String> projectTags = [];
+    if (customTags.isNotEmpty) {
+      for (String tag in customTags) {
+        projectTags.add(tag);
+      }
+    }
+    if (defaultTags.isNotEmpty) {
+      for (String tag in defaultTags.keys) {
+        if (defaultTags[tag] == true) {
+          projectTags.add(tag);
+        }
+      }
+    }
+    projectTags.sort((a, b) => a.toString().compareTo(b.toString()));
+    return projectTags;
   }
 
   @override
@@ -62,6 +153,7 @@ class _AddFormState extends State<AddForm> {
                       if (image == null)
                       ImagePlaceholder()
                       else if (image != null)
+                      kIsWeb ? Image.network(image!.path, height: 500) :
                       Image.file(File(image!.path), height: 300),
                       ImageUpload(onImageSelect: onImageSelect),
                       Padding(
@@ -79,9 +171,31 @@ class _AddFormState extends State<AddForm> {
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            
+                          },
+                          child: TextFormField(
+                            controller: _dateController,
+                            //initialValue: ,
+                            decoration: const InputDecoration(
+                              hintText: 'MM/DD/YYYY',
+                              helperText: 'Enter a start date for this project (MM/DD/YYYY)',
+                              labelText: 'Start Date',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: _validateDate,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
                         child: InputDatePickerFormField(
                           firstDate: DateTime(2010), 
                           lastDate: DateTime(2030),
+                          initialDate: DateTime.now(),
+                          fieldLabelText: 'Start Date',
+                          fieldHintText: 'MM/DD/YYYY',
                         ),
                       ),
                       Padding(
@@ -114,7 +228,10 @@ class _AddFormState extends State<AddForm> {
                           maxLines: 5,
                         ),
                       ),
-                      CheckboxListTileExample(),
+                      DefaultTagsCheckboxList(
+                        defaultTags: defaultTags,
+                        toggleTag: toggleTag,
+                      ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
                         child: TextFormField(
@@ -135,61 +252,6 @@ class _AddFormState extends State<AddForm> {
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class CheckboxListTileExample extends StatefulWidget {
-  const CheckboxListTileExample({super.key});
-
-  @override
-  State<CheckboxListTileExample> createState() => _CheckboxListTileExampleState();
-}
-
-class _CheckboxListTileExampleState extends State<CheckboxListTileExample> {
-  Map<String, bool> defaultTags = {
-    'art': false,
-    'drawing': false, 
-    'painting': false, 
-    'pottery': false, 
-    'woodwork': false, 
-    'ceramics': false, 
-    'printmaking': false, 
-    'knitting': false,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.only(top: 8.0, left: 4.0),
-          child:
-            Text(
-              'Tags',
-              style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
-            ),
-        ),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          childAspectRatio: 4,
-          children: [
-            for (String tag in defaultTags.keys)
-            CheckboxListTile(
-              title: Text(tag),
-              value: defaultTags[tag], 
-              onChanged: (bool? value) {
-                setState(() {
-                  defaultTags[tag] = value!;
-                });
-              },
-            ),
-          ],
         ),
       ],
     );

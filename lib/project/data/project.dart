@@ -1,7 +1,7 @@
 import '../../stage/data/stage.dart';
 
 class Project {
-  final int id;
+  final int? id;
   final String title;
   final String? image;
   final String? description;
@@ -13,9 +13,9 @@ class Project {
   final bool complete;
 
   Project({
-    required this.id,
     required this.title,
     required this.start,
+    this.id,
     this.image,
     this.description,
     this.notes,
@@ -27,14 +27,13 @@ class Project {
 
   Map<String, Object?> toMap() {
     return {
-      'id': id,
       'title': title,
       'start': start.millisecondsSinceEpoch,
       'image': image,
       'description': description,
       'notes': notes,
       'end': end?.millisecondsSinceEpoch,
-      'complete': complete,
+      'complete': complete == true ? 1 : 0,
     };
   }
 }
