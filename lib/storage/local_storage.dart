@@ -77,7 +77,30 @@ class LocalStorage {
     ];
   }
 
-  Future<void> updateProject(Project project) async {
+  Future<Project?> getProjectById(int pid) async {
+    final List<Map<String, Object?>> projectMaps = await db.query(
+      'projects',
+      where: 'id = ?',
+      whereArgs: [pid],
+    );
+    
+    if (projectMaps.isEmpty) {
+      return null;
+    }
+    
+    final {'id': id as int, 'title': title as String, 'image': image as String?, 
+      'description': description as String?, 'notes': notes as String?,
+      'start': start as int, 'end': end as int?, 'complete': complete as int,
+    } = projectMaps[0];
+
+    return Project(
+      id: id, title: title, image: image, description: description, notes: notes,
+      start: DateTime.fromMicrosecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMicrosecondsSinceEpoch(end), 
+      complete: complete == 1 ? true : false, tags: await getProjectTags(id),
+    );
+  }
+
+  Future<void> updateProject(Project project, List<String> tags) async {
     await db.update(
       'projects',
       project.toMap(),
@@ -92,8 +115,10 @@ class LocalStorage {
       whereArgs: [project.id],
     );
 
-    // Add updated tags
-    await insertTags(project.id!, project.tags!);
+    // Add updated tags (if there are any)
+    if (tags.isNotEmpty) {
+      await insertTags(project.id!, tags);
+    }
   }
 
   Future<void> deleteProject(int id) async {
