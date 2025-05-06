@@ -1,41 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class DatePickerExample extends StatefulWidget {
-  const DatePickerExample({super.key});
+class DatePickerFormField extends StatelessWidget {
+  // https://docs.flutter.dev/get-started/fundamentals/state-management#using-callbacks
+  final ValueChanged<DateTime> onDateSelected;
+  final TextEditingController controller;
+  final DateTime? initialDate;
 
-  @override
-  State<DatePickerExample> createState() => _DatePickerExampleState();
-}
+  const DatePickerFormField({
+    super.key,
+    required this.onDateSelected,
+    required this.controller,
+    this.initialDate,
+  });
 
-class _DatePickerExampleState extends State<DatePickerExample> {
-  DateTime? selectedDate;
-
-  Future<void> _selectDate() async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2021, 7, 25),
-      firstDate: DateTime(2021),
-      lastDate: DateTime(2022),
-    );
-
-    setState(() {
-      selectedDate = pickedDate;
-    });
+  String? _validateDate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please select a start date';
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      spacing: 20,
-      children: <Widget>[
-        Text(
-          selectedDate != null
-              ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-              : 'No date selected',
+
+    return GestureDetector(
+      onTap: () async {
+        final selection = await showDatePicker(
+          context: context,
+          initialDate: initialDate ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (selection != null) {
+          controller.text = DateFormat.yMd().format(selection).toString();
+          onDateSelected(selection);
+        }
+      },
+      child: AbsorbPointer(
+        child: TextFormField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'MM/DD/YYYY',
+            helperText: 'Enter a start date (MM/DD/YYYY)',
+            labelText: 'Start Date',
+            border: OutlineInputBorder(),
+            suffixIcon: const Icon(Icons.calendar_today),
+          ),
+          //validator: _validateDate,
         ),
-        OutlinedButton(onPressed: _selectDate, child: const Text('Select Date')),
-      ],
+      ),
     );
   }
 }

@@ -71,7 +71,7 @@ class LocalStorage {
         } in projectMaps)
       Project(
         id: id, title: title, image: image, description: description, notes: notes,
-        start: DateTime.fromMicrosecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMicrosecondsSinceEpoch(end), 
+        start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
         complete: complete == 1 ? true : false, tags: await getProjectTags(id),
       ),
     ];
@@ -95,7 +95,7 @@ class LocalStorage {
 
     return Project(
       id: id, title: title, image: image, description: description, notes: notes,
-      start: DateTime.fromMicrosecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMicrosecondsSinceEpoch(end), 
+      start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
       complete: complete == 1 ? true : false, tags: await getProjectTags(id),
     );
   }

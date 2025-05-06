@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wip_tracker/interface/date_picker_form.dart';
 import 'package:wip_tracker/project/widgets/default_tags.dart';
+import 'package:intl/intl.dart';
 
 import '../../image/image_upload.dart';
 import '../../storage/local_storage.dart';
@@ -10,8 +12,9 @@ import '../../image/image_placeholder.dart';
 import '../data/project.dart';
 
 class ProjectForm extends StatefulWidget {
-  const ProjectForm({super.key, required this.formType});
+  const ProjectForm({super.key, required this.formType, this.project});
   final String formType;
+  final Project? project;
 
   @override
   State<ProjectForm> createState() => ProjectFormState();
@@ -27,7 +30,35 @@ class ProjectFormState extends State<ProjectForm> {
   final _localStorage = LocalStorage();
 
   XFile? image;
-  String? startDate;
+  DateTime startDate = DateTime.now();
+  bool imageChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _dateController.text = DateFormat.yMd().format(startDate).toString();
+    if (widget.formType == 'edit') {
+      // Populate the form with previously saved data
+      debugPrint('Project ID is: ${widget.project!.id}');
+      _titleController.text = widget.project!.title;
+      startDate = widget.project!.start;
+      _dateController.text = DateFormat.yMd().format(widget.project!.start).toString();
+      _descController.text = widget.project!.description ?? '';
+      _notesController.text = widget.project!.notes ?? '';
+      image = widget.project!.image != null ? XFile(widget.project!.image!) : null;
+
+      if (widget.project!.tags != null && widget.project!.tags!.isNotEmpty) {
+        for (String tag in widget.project!.tags!) {
+          if (defaultTags.containsKey(tag)) {
+            defaultTags[tag] = true;
+          }
+          else {
+            _customTagsController.text += '$tag, ';
+          }
+        }
+      }
+    }
+  }
 
   Map<String, bool> defaultTags = {
     'art': false,
@@ -50,27 +81,25 @@ class ProjectFormState extends State<ProjectForm> {
     return null;
   }
 
-  String? _validateDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please select a start date';
-    }
-    return null;
-  }
-
   Future<bool> submitForm() async {
     if (_formKey.currentState!.validate()) {
       String? imagePath;
-      if (image != null && !kIsWeb) {
+      if (widget.formType == 'edit') {
+        imagePath = widget.project?.image;
+      }
+      if (image != null && !kIsWeb && imageChanged == true) {
         imagePath = await saveImageLocally(File(image!.path), image!.path);
       }
       final project = Project(
+        id: widget.formType == 'edit' ? widget.project!.id : null,
         title: _titleController.text,
-        start: DateTime.now(),
+        start: startDate,
         image: imagePath,
         description: _descController.text,
         notes: _notesController.text,
+        end: widget.formType == 'edit' ? widget.project!.end : null,
       );
-      
+      debugPrint('START DATE IS: ${project.start}');
       // Tag handling
       List<String> customTags = _normalizeCustomTags(_customTagsController.text);
       List<String> tags = gatherTags(customTags, defaultTags);
@@ -78,10 +107,14 @@ class ProjectFormState extends State<ProjectForm> {
       // Local db updates
       if (!kIsWeb) {
         await _localStorage.open('wip_tracker.db');
-        int pid = await _localStorage.insertProject(project);
-        await _localStorage.insertTags(pid, tags);
+        if (widget.formType == 'add') {
+          int pid = await _localStorage.insertProject(project);
+          await _localStorage.insertTags(pid, tags);
+        }
+        else if (widget.formType == 'edit') {
+          await _localStorage.updateProject(project, tags);
+        }
       }
-
       return true;
     }
     return false;
@@ -90,6 +123,7 @@ class ProjectFormState extends State<ProjectForm> {
   void onImageSelect(XFile selectedImage) {
     setState(() {
       image = selectedImage;
+      imageChanged = true;
     });
   }
 
@@ -99,18 +133,17 @@ class ProjectFormState extends State<ProjectForm> {
     });
   }
 
-  // void onDateSelect(DateTime selectedDate) {
-  //   String selectedDateString = 
-  //   setState(() {
-  //     startDate = selectedDateString;
-  //   });
-  // }
+  void onDateSelect(DateTime selectedDate) {
+    setState(() {
+      startDate = selectedDate;
+    });
+  }
 
   List<String> _normalizeCustomTags(String customTagsText) {
     List<String> tags = customTagsText.split(',');
     List<String> normalizedTags = [];
     for (String tag in tags) {
-      if (tag != '') {
+      if (tag.trim() != '') {
         tag = tag.trim();
         tag = tag.toLowerCase();
         normalizedTags.add(tag);
@@ -171,31 +204,10 @@ class ProjectFormState extends State<ProjectForm> {
                       ),
                       Padding(
                         padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            
-                          },
-                          child: TextFormField(
-                            controller: _dateController,
-                            //initialValue: ,
-                            decoration: const InputDecoration(
-                              hintText: 'MM/DD/YYYY',
-                              helperText: 'Enter a start date for this project (MM/DD/YYYY)',
-                              labelText: 'Start Date',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: _validateDate,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
-                        child: InputDatePickerFormField(
-                          firstDate: DateTime(2010), 
-                          lastDate: DateTime(2030),
-                          initialDate: DateTime.now(),
-                          fieldLabelText: 'Start Date',
-                          fieldHintText: 'MM/DD/YYYY',
+                        child: DatePickerFormField(
+                          onDateSelected: onDateSelect,
+                          controller: _dateController,
+                          initialDate: startDate,
                         ),
                       ),
                       Padding(

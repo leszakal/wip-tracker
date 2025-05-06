@@ -110,7 +110,7 @@ class ProjectCard extends StatelessWidget {
             splashColor: Colors.deepPurple.withAlpha(30),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => ProjectDetail(project: project, localStorage: LocalStorage())),
+                MaterialPageRoute(builder: (context) => ProjectDetail(project: project)),
               );
             },
             child: SizedBox(
