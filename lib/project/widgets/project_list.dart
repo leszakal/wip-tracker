@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 //import 'firebasestorage.dart';
 import 'package:wip_tracker/project/widgets/project_add.dart';
 import 'project_card.dart';
@@ -76,15 +77,7 @@ class _ProjectListState extends State<ProjectList> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProjectAdd()),
-          );
-          if (result == true) {
-            _loadProjects();
-          }
-        },
+        onPressed: () => context.go('/project/add'),
         tooltip: "Add a new project",
         child: Icon(Icons.add),
       ),

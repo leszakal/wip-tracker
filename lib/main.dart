@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wip_tracker/project/data/project.dart';
+import 'package:wip_tracker/project/widgets/project_detail.dart';
 // import 'package:firebase_core/firebase_core.dart';
 
 import 'project/widgets/project_list.dart';
@@ -18,11 +20,19 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const ProjectList(),
+      builder: (context, state) => ProjectList(),
     ),
     GoRoute(
       path: '/add-project',
-      builder: (context, state) => const ProjectAdd(),
+      builder: (context, state) => ProjectAdd(),
+    ),
+    GoRoute(
+      name: 'projects',
+      path: '/projects/:id',
+      builder: (context, state) {
+        final projectId = int.parse(state.pathParameters['id']!);
+        return ProjectDetail(projectId: projectId);
+      },
     ),
   ],
 );

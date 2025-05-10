@@ -1,12 +1,5 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-//import 'firebasestorage.dart';
-import 'package:image_picker/image_picker.dart';
-
-import '../../interface/drawer.dart';
 import '../data/project.dart';
-import '../../stage/data/stage.dart';
 import 'project_form.dart';
 
 class ProjectEdit extends StatefulWidget {

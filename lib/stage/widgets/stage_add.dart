@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'project_form.dart';
+//import 'firebasestorage.dart';
+import 'stage_form.dart';
 
-class ProjectAdd extends StatefulWidget {
-  const ProjectAdd({super.key});
-  final String title = 'Add New Project';
+class StageAdd extends StatefulWidget {
+  const StageAdd({super.key, required this.pid});
+  final int pid;
+  final String title = 'Add New Stage';
 
   @override
-  State<ProjectAdd> createState() => _ProjectAddState();
+  State<StageAdd> createState() => _StageAddState();
 }
 
-class _ProjectAddState extends State<ProjectAdd> {
-  final GlobalKey<ProjectFormState> _projectFormKey = GlobalKey<ProjectFormState>();
+class _StageAddState extends State<StageAdd> {
+  final GlobalKey<StageFormState> _stageFormKey = GlobalKey<StageFormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,12 +23,16 @@ class _ProjectAddState extends State<ProjectAdd> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          child: ProjectForm(key: _projectFormKey, formType: 'add'),
+          child: StageForm(
+            key: _stageFormKey, 
+            formType: 'add',
+            pid: widget.pid,
+          ),
         )
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await _projectFormKey.currentState?.submitForm().then((value) {
+          await _stageFormKey.currentState?.submitForm().then((value) {
             if (value == true && context.mounted) {
               Navigator.pop(context, true);
             }
@@ -35,7 +41,7 @@ class _ProjectAddState extends State<ProjectAdd> {
             }
           });
         },
-        tooltip: "Finish editing and add project",
+        tooltip: "Finish editing and add stage",
         label: const Text('Done'),
         icon: const Icon(Icons.arrow_back),
       ),

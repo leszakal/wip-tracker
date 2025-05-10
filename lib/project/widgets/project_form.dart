@@ -7,6 +7,7 @@ import 'package:wip_tracker/project/widgets/default_tags.dart';
 import 'package:intl/intl.dart';
 
 import '../../image/image_upload.dart';
+import '../../stage/data/stage.dart';
 import '../../storage/local_storage.dart';
 import '../../image/image_placeholder.dart';
 import '../data/project.dart';
@@ -110,9 +111,31 @@ class ProjectFormState extends State<ProjectForm> {
         if (widget.formType == 'add') {
           int pid = await _localStorage.insertProject(project);
           await _localStorage.insertTags(pid, tags);
+          // Create and insert initial stage
+          final stage = Stage(
+            pid: pid,
+            name: 'Initial Stage',
+            timestamp: startDate,
+            description: 'The initial state of this project, this stage was generated on project creation.',
+            notes: 'This stage cannot be modified directly but will change if project details are updated.',
+            image: imagePath,
+          );
+          await _localStorage.insertStage(stage);
         }
         else if (widget.formType == 'edit') {
           await _localStorage.updateProject(project, tags);
+          int? initStageId = await _localStorage.getInitialStage(project.id!);
+          // Update initial stage
+          final stage = Stage(
+            id: initStageId,
+            pid: project.id!,
+            name: 'Initial Stage',
+            timestamp: startDate,
+            description: 'The initial state of this project, this stage was generated on project creation.',
+            notes: 'This stage cannot be modified directly but will change if project details are updated.',
+            image: imagePath,
+          );
+          await _localStorage.updateStage(stage);
         }
       }
       return true;

@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../project/data/project.dart';
+import '../stage/data/stage.dart';
 
 class LocalStorage {
   late Database db;
@@ -26,6 +27,19 @@ class LocalStorage {
             start INTEGER NOT NULL,
             end INTEGER,
             complete INTEGER
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE stages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            name TEXT,
+            timestamp INTEGER NOT NULL,
+            description TEXT,
+            notes TEXT,
+            image TEXT,
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
           )
         ''');
 
@@ -127,6 +141,72 @@ class LocalStorage {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> insertStage(Stage stage) async {
+    return await db.insert(
+      'stages',
+      stage.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updateStage(Stage stage) async {
+    if (stage.id == null) return;
+    await db.update(
+      'stages',
+      stage.toMap(),
+      where: 'id = ?',
+      whereArgs: [stage.id],
+    );
+  }
+
+  Future<void> deleteStage(int id) async {
+    await db.delete(
+      'stages',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Stage>> getStagesForProject(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+    );
+
+    if (stageMaps.isEmpty) {
+      return [];
+    }
+
+    return [
+      for (final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+        'timestamp': timestamp as int, 'description': description as String?,
+        'notes': notes as String?, 'image': image as String?,
+      } in stageMaps)
+      Stage(
+        id: id, pid: pid, name: name, 
+        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+        description: description, notes: notes, image: image,
+      ),
+    ];
+  }
+
+  Future<int?> getInitialStage(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'id ASC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+    return stageMaps[0]['id'] as int;
   }
 
   Future<void> insertTags(int pid, List<String> tags) async {

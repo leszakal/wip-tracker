@@ -1,14 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../data/project.dart';
-import 'project_detail.dart';
+import 'package:intl/intl.dart';
+import '../data/stage.dart';
 
-class ProjectCard extends StatelessWidget {
-  final Project project;
+class StageCard extends StatelessWidget {
+  final Stage stage;
   
-  const ProjectCard({super.key, required this.project});
+  const StageCard({super.key, required this.stage});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +22,10 @@ class ProjectCard extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.deepPurple.withAlpha(30),
             onTap: () {
+              debugPrint('Stage ID: ${stage.id}');
               // Navigator.of(context).push(
-              //   MaterialPageRoute(builder: (context) => ProjectDetail(project: project)),
+              //   MaterialPageRoute(builder: (context) => StageDetail(stage: stage)),
               // );
-              context.goNamed('projects', pathParameters: {'id': project.id.toString()});
             },
             child: SizedBox(
               child: Column(
@@ -35,10 +34,19 @@ class ProjectCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(12.0, 0.0, 8.0, 8.0),
-                          child: Text(project.title),
-                        )
+                        child: 
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(12.0, 8.0, 8.0, 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                stage.name!.isNotEmpty 
+                                ? Text(stage.name!, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)) 
+                                : Text('Stage ${stage.id}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                                Text(DateFormat.yMd().format(stage.timestamp).toString()),
+                              ],
+                            ),
+                          )
                       ),
                       IconButton(
                         onPressed: () {}, 
@@ -46,7 +54,7 @@ class ProjectCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (project.image != null) 
+                  if (stage.image != null) 
                   Column(
                     children: [
                       Divider(height: 1),
@@ -54,8 +62,8 @@ class ProjectCard extends StatelessWidget {
                         clipBehavior: Clip.hardEdge,
                         child: Image.file(
                           width: 350,
-                          height: 180,
-                          File(project.image!),
+                          height: 175,
+                          File(stage.image!),
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -63,22 +71,11 @@ class ProjectCard extends StatelessWidget {
                     ],
                   ),
                   Padding(
-                    padding: EdgeInsets.only(left: 12.0, top: 8.0),
-                    child: Text('Stage name'),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 12.0),
-                    child: Row(
-                      children: [
-                        Text('Tags: '),
-                        if (project.tags == null || project.tags!.isEmpty)
-                          Text('<None>')
-                        else
-                          for (int i = 0; i < project.tags!.length; i++)
-                            (i != project.tags!.length - 1) ?
-                            Text('${project.tags![i]}, ')
-                            : Text(project.tags![i]),
-                      ],
+                    padding: EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
+                    child: Text(
+                      stage.description!.isNotEmpty ? stage.description! : 'No description...',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
