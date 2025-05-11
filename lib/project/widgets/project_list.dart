@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 //import 'firebasestorage.dart';
-import 'package:wip_tracker/project/widgets/project_add.dart';
 import 'project_card.dart';
 
 import '../../interface/drawer.dart';
 import '../data/project.dart';
 import '../../stage/data/stage.dart';
 import '../../storage/local_storage.dart';
-import 'project_detail.dart';
+import 'project_add.dart';
 
 class ProjectList extends StatefulWidget {
   final bool? reload;
@@ -77,7 +75,15 @@ class _ProjectListState extends State<ProjectList> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/project/add'),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProjectAdd()),
+          );
+          if (result == true) {
+            _loadProjects();
+          }
+        },
         tooltip: "Add a new project",
         child: Icon(Icons.add),
       ),

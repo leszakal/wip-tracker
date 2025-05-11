@@ -23,7 +23,7 @@ final _router = GoRouter(
       builder: (context, state) => ProjectList(),
     ),
     GoRoute(
-      path: '/add-project',
+      path: '/projects/add',
       builder: (context, state) => ProjectAdd(),
     ),
     GoRoute(

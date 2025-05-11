@@ -23,10 +23,7 @@ class ProjectCard extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.deepPurple.withAlpha(30),
             onTap: () {
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(builder: (context) => ProjectDetail(project: project)),
-              // );
-              context.goNamed('projects', pathParameters: {'id': project.id.toString()});
+              context.pushNamed('projects', pathParameters: {'id': project.id.toString()});
             },
             child: SizedBox(
               child: Column(

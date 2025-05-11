@@ -88,7 +88,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
         appBar: AppBar(
           title: Text(project?.title ?? 'Loading project...'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          leading: BackButton(onPressed: () => context.go('/')),
+          leading: BackButton(),
           bottom: const TabBar(
             tabs: <Widget>[
               Tab(text: 'Overview'),
