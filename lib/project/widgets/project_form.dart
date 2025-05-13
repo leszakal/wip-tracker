@@ -117,7 +117,7 @@ class ProjectFormState extends State<ProjectForm> {
             name: 'Initial Stage',
             timestamp: startDate,
             description: 'The initial state of this project, this stage was generated on project creation.',
-            notes: 'This stage cannot be modified directly but will change if project details are updated.',
+            notes: 'This stage cannot be modified directly. If you wish to change the image or timestamp, edit the project details.',
             image: imagePath,
           );
           await _localStorage.insertStage(stage);
@@ -132,7 +132,7 @@ class ProjectFormState extends State<ProjectForm> {
             name: 'Initial Stage',
             timestamp: startDate,
             description: 'The initial state of this project, this stage was generated on project creation.',
-            notes: 'This stage cannot be modified directly but will change if project details are updated.',
+            notes: 'This stage cannot be modified directly. If you wish to change the image or timestamp, edit the project details.',
             image: imagePath,
           );
           await _localStorage.updateStage(stage);
