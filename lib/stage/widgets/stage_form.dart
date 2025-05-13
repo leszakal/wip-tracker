@@ -137,9 +137,9 @@ class StageFormState extends State<StageForm> {
                         child: TextFormField(
                           controller: _nameController,
                           decoration: const InputDecoration(
-                            hintText: 'e.g. Landscape in Acryllic',
+                            hintText: 'e.g. Stage 2',
                             helperText: 'Enter a name for this stage',
-                            labelText: 'Title',
+                            labelText: 'Name',
                             border: OutlineInputBorder(),
                           ),
                           validator: _validateName,

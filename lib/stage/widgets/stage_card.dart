@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../data/stage.dart';
 
@@ -22,10 +23,7 @@ class StageCard extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.deepPurple.withAlpha(30),
             onTap: () {
-              debugPrint('Stage ID: ${stage.id}');
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(builder: (context) => StageDetail(stage: stage)),
-              // );
+              context.pushNamed('stages', pathParameters: {'pid': stage.pid.toString(), 'sid': stage.id.toString()});
             },
             child: SizedBox(
               child: Column(
