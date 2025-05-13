@@ -209,6 +209,71 @@ class LocalStorage {
     return stageMaps[0]['id'] as int;
   }
 
+  Future<int?> getLatestStageId(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+    return stageMaps[0]['id'] as int;
+  }
+
+  Future<Stage?> getLatestStageObject(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+
+    final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+      'timestamp': timestamp as int, 'description': description as String?,
+      'notes': notes as String?, 'image': image as String?,
+    } = stageMaps[0];
+
+    return Stage(
+      id: id, pid: pid, name: name, 
+      timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+      description: description, notes: notes, image: image,
+    );
+  }
+
+  Future<Stage?> getStageById(int stageId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'id = ?',
+      whereArgs: [stageId],
+      orderBy: 'id',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+   
+    final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+      'timestamp': timestamp as int, 'description': description as String?,
+      'notes': notes as String?, 'image': image as String?,
+    } = stageMaps[0];
+
+    return Stage(
+      id: id, pid: pid, name: name, 
+      timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+      description: description, notes: notes, image: image,
+    );
+  }
+
   Future<void> insertTags(int pid, List<String> tags) async {
     final batch = db.batch();
 
