@@ -1,4 +1,3 @@
-// file: project_detail.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../stage/data/stage.dart';
@@ -23,6 +22,7 @@ class ProjectDetail extends StatefulWidget {
 class _ProjectDetailState extends State<ProjectDetail> {
   Project? project;
   List<Stage>? stages;
+  Stage? latestStage;
   final _localStorage = LocalStorage();
 
   @override
@@ -43,6 +43,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
       _localStorage.getStagesForProject(widget.projectId).then((value) {
         setState(() {
           stages = value;
+          latestStage = stages![0];
         });
       });
     });
@@ -74,6 +75,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
           }
           else {
             stages = value;
+            latestStage = stages![0];
           }
         });
       });
@@ -88,7 +90,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
         appBar: AppBar(
           title: Text(project?.title ?? 'Loading project...'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          leading: BackButton(),
+          leading: BackButton(onPressed: () {
+            context.go('/', extra: true);
+          }),
           bottom: const TabBar(
             tabs: <Widget>[
               Tab(text: 'Overview'),
@@ -109,7 +113,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
                 children: [
                   if (project!.image != null)
                     Image.file(
-                      File(project!.image!),
+                      latestStage?.image != null
+                      ? File(latestStage!.image!)
+                      : File(project!.image!),
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
@@ -224,12 +230,51 @@ class _ProjectDetailState extends State<ProjectDetail> {
               ),
 
             // Gallery
-            const Center(
-              child: Text(
-                'Gallery view to be implemented',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
+            stages == null
+            ? Center(child: CircularProgressIndicator())
+            : stages!.isEmpty
+                ? Center(
+                    child: Text(
+                      "No images to display -- add a stage.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 15,
+                      ),
+                    ),
+                  )
+                : Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 8.0,
+                        mainAxisSpacing: 8.0,
+                      ),
+                      itemCount: stages!.length,
+                      itemBuilder: (context, index) {
+                        final stage = stages![index];
+                        if (stage.image == null) {
+                          return Container(
+                            color: Colors.grey,
+                            child: Icon(Icons.image_not_supported),
+                          );
+                        }
+                        return GestureDetector(
+                          onTap: () {
+                            // Optional: implement full-screen view later
+                          },
+                          child: ClipRect(
+                            child: Image.file(
+                              File(stage.image!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(

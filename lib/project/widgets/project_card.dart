@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../stage/data/stage.dart';
 import '../data/project.dart';
-import 'project_detail.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
+  final Stage latestStage;
   
-  const ProjectCard({super.key, required this.project});
+  const ProjectCard({super.key, required this.project, required this.latestStage});
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +18,14 @@ class ProjectCard extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(
           minHeight: 150,
-          maxHeight: 300,
+          maxHeight: 310,
         ),
         child: Card(
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             splashColor: Colors.deepPurple.withAlpha(30),
             onTap: () {
-              context.pushNamed('projects', pathParameters: {'id': project.id.toString()});
+              context.pushNamed('projects', pathParameters: {'pid': project.id.toString()});
             },
             child: SizedBox(
               child: Column(
@@ -32,10 +34,19 @@ class ProjectCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(12.0, 0.0, 8.0, 8.0),
-                          child: Text(project.title),
-                        )
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(12.0, 8.0, 8.0, 2.0),
+                              child: Text(project.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(12.0, 0.0, 8.0, 8.0),
+                              child: Text('Last update: ${DateFormat.yMd().format(latestStage.timestamp).toString()}'),
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         onPressed: () {}, 
@@ -52,7 +63,7 @@ class ProjectCard extends StatelessWidget {
                         child: Image.file(
                           width: 350,
                           height: 180,
-                          File(project.image!),
+                          File(latestStage.image!),
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -61,7 +72,7 @@ class ProjectCard extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 12.0, top: 8.0),
-                    child: Text('Stage name'),
+                    child: Text('Latest stage: ${latestStage.name!}'),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 12.0),

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 //import 'firebasestorage.dart';
 import 'project_card.dart';
@@ -37,6 +36,16 @@ class _ProjectListState extends State<ProjectList> {
     _loadProjects();
   }
 
+  Future<Stage?> getLatestStage(Project project) async {
+    final latestStage = await _localStorage.getLatestStageObject(project.id!);
+    if (latestStage != null) {
+      return latestStage;
+    } 
+    else {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.reload == true) {
@@ -68,7 +77,25 @@ class _ProjectListState extends State<ProjectList> {
               final project = projects![index];
               return Padding(
                 padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                child: ProjectCard(project: project),
+                child: FutureBuilder(future: getLatestStage(project), builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final latestStage = snapshot.data;
+                    return ProjectCard(
+                      project: project, 
+                      latestStage: latestStage!
+                    );
+                  }
+                  else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } 
+                  else {
+                    // Placeholder while loading
+                    return const SizedBox(
+                      height: 300,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  } 
+                }),
               );
             },
           ),
