@@ -55,20 +55,23 @@ class ProjectCard extends StatelessWidget {
                     ],
                   ),
                   if (project.image != null) 
-                  Column(
-                    children: [
-                      Divider(height: 1),
-                      FittedBox(
-                        clipBehavior: Clip.hardEdge,
-                        child: Image.file(
-                          width: 350,
-                          height: 180,
-                          File(latestStage.image!),
-                          fit: BoxFit.contain,
+                  Container(
+                    color: Colors.grey[300],
+                    child: Column(
+                      children: [
+                        Divider(height: 1),
+                        FittedBox(
+                          clipBehavior: Clip.hardEdge,
+                          child: Image.file(
+                            width: 350,
+                            height: 180,
+                            File(latestStage.image!),
+                            fit: BoxFit.contain,
+                          ),
                         ),
-                      ),
-                      Divider(height: 1),
-                    ],
+                        Divider(height: 1),
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 12.0, top: 8.0),

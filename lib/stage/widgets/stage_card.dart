@@ -53,20 +53,23 @@ class StageCard extends StatelessWidget {
                     ],
                   ),
                   if (stage.image != null) 
-                  Column(
-                    children: [
-                      Divider(height: 1),
-                      FittedBox(
-                        clipBehavior: Clip.hardEdge,
-                        child: Image.file(
-                          width: 350,
-                          height: 175,
-                          File(stage.image!),
-                          fit: BoxFit.contain,
+                  Container(
+                    color: Colors.grey[300],
+                    child: Column(
+                      children: [
+                        Divider(height: 1),
+                        FittedBox(
+                          clipBehavior: Clip.hardEdge,
+                          child: Image.file(
+                            width: 350,
+                            height: 175,
+                            File(stage.image!),
+                            fit: BoxFit.contain,
+                          ),
                         ),
-                      ),
-                      Divider(height: 1),
-                    ],
+                        Divider(height: 1),
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
