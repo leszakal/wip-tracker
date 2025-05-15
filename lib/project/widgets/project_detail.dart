@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:wip_tracker/interface/delete_dialog.dart';
 import '../../stage/data/stage.dart';
 import '../../stage/widgets/stage_add.dart';
 import '../../stage/widgets/stage_card.dart';
@@ -159,17 +160,16 @@ class _ProjectDetailState extends State<ProjectDetail> {
                         },
                         child: const Text('edit'),
                       ),
-                      ElevatedButton(
-                        onPressed: () async {
+                      DeleteDialog(
+                        objectName: project!.title, 
+                        onConfirm: () async {
                           await _localStorage.open('wip_tracker.db');
                           await _localStorage.deleteProject(project!.id!);
                           if (context.mounted) {
-                            context.go('/');
+                            context.pushReplacement('/', extra: true);
                           }
-                        },
-                        child: const Text('delete'),
+                        }
                       ),
-                      
                     ],
                   ),
                   Divider(height: 30.0),

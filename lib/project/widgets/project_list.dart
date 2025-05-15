@@ -51,68 +51,71 @@ class _ProjectListState extends State<ProjectList> {
     if (widget.reload == true) {
       _loadProjects();
     }
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('Projects'),
-      ),
-      drawer: const MyDrawer(currentPage: 1),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-          child: projects == null ?
-          CircularProgressIndicator()
-          : projects!.isEmpty ? 
-          Text(
-            "No projects yet -- add one!",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 20,
+    return PopScope(
+      canPop: widget.reload == false,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text('Projects'),
+        ),
+        drawer: const MyDrawer(currentPage: 1),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+            child: projects == null ?
+            CircularProgressIndicator()
+            : projects!.isEmpty ? 
+            Text(
+              "No projects yet -- add one!",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 20,
+              ),
+            ) 
+            : ListView.builder(
+              itemCount: projects!.length,
+              itemBuilder: (context, index) {
+                final project = projects![index];
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                  child: FutureBuilder(future: getLatestStage(project), builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final latestStage = snapshot.data;
+                      return ProjectCard(
+                        project: project, 
+                        latestStage: latestStage!
+                      );
+                    }
+                    else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } 
+                    else {
+                      // Placeholder while loading
+                      return const SizedBox(
+                        height: 300,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    } 
+                  }),
+                );
+              },
             ),
-          ) 
-          : ListView.builder(
-            itemCount: projects!.length,
-            itemBuilder: (context, index) {
-              final project = projects![index];
-              return Padding(
-                padding: EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-                child: FutureBuilder(future: getLatestStage(project), builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final latestStage = snapshot.data;
-                    return ProjectCard(
-                      project: project, 
-                      latestStage: latestStage!
-                    );
-                  }
-                  else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } 
-                  else {
-                    // Placeholder while loading
-                    return const SizedBox(
-                      height: 300,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  } 
-                }),
-              );
-            },
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProjectAdd()),
-          );
-          if (result == true) {
-            _loadProjects();
-          }
-        },
-        tooltip: "Add a new project",
-        child: Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProjectAdd()),
+            );
+            if (result == true) {
+              _loadProjects();
+            }
+          },
+          tooltip: "Add a new project",
+          child: Icon(Icons.add),
+        ),
       ),
     );
   }
