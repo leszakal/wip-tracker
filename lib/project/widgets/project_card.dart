@@ -54,7 +54,6 @@ class ProjectCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (project.image != null) 
                   Container(
                     color: Colors.grey[300],
                     child: Column(
@@ -62,12 +61,14 @@ class ProjectCard extends StatelessWidget {
                         Divider(height: 1),
                         FittedBox(
                           clipBehavior: Clip.hardEdge,
-                          child: Image.file(
-                            width: 350,
-                            height: 180,
-                            File(latestStage.image!),
-                            fit: BoxFit.contain,
-                          ),
+                          child: project.image != null
+                          ? Image.file(
+                              width: 350,
+                              height: 180,
+                              File(latestStage.image!),
+                              fit: BoxFit.contain,
+                            )
+                          : const Icon(Icons.image_not_supported, size: 180, color: Colors.grey),
                         ),
                         Divider(height: 1),
                       ],
