@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wip_tracker/account/widgets/login.dart';
 import 'package:wip_tracker/project/widgets/project_detail.dart';
-// import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'project/widgets/project_list.dart';
 import 'stage/widgets/stage_detail.dart';
-// import 'firebase_options.dart';
-// import 'home.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
    WidgetsFlutterBinding.ensureInitialized();
-   // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
    runApp(const MyApp());
 }
 
@@ -26,6 +26,12 @@ final _router = GoRouter(
         else {
           return ProjectList();
         }
+      }
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) {
+        return LoginPage();
       }
     ),
     GoRoute(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key, required this.currentPage});
@@ -8,6 +9,7 @@ class MyDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     return Drawer(
       child: ListView(
         // Important: Remove any padding from the ListView.
@@ -31,7 +33,7 @@ class MyDrawer extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Local User',
+                  user != null ? user.email! : 'Local User',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -50,13 +52,24 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           Divider(),
-          ListTile(
-            title: const Text('Sign In'),
-            leading: const Icon(Icons.login),
-            onTap: () {
-              currentPage == 2 ? Navigator.pop(context) : context.go('/login');
-            },
-          ),
+          user == null
+          ? ListTile(
+              title: const Text('Sign In'),
+              leading: const Icon(Icons.login),
+              onTap: () {
+                currentPage == 2 ? Navigator.pop(context) : context.go('/login');
+              },
+            )
+          : ListTile(
+              title: const Text('Sign Out'),
+              leading: const Icon(Icons.logout),
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
+            ),
         ],
       ),
     );
