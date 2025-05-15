@@ -25,7 +25,10 @@ class StageCardMini extends StatelessWidget {
               ListTile(
                 title: stage.name!.isNotEmpty ? Text(stage.name!) : Text('Stage ${stage.id}'),
                 subtitle: Text(DateFormat.yMd().format(stage.timestamp).toString()),
-                trailing: Image.file(File(stage.image!), width: 60, height: 60, fit: BoxFit.cover),
+                trailing: 
+                  stage.image != null 
+                  ? Image.file(File(stage.image!), width: 60, height: 60, fit: BoxFit.cover)
+                  : const Icon(Icons.image_not_supported, size: 60, color: Colors.grey),
               ),
             ],
           ),
