@@ -1,6 +1,7 @@
 // file: stage_detail.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../interface/delete_dialog.dart';
 import '../../stage/data/stage.dart';
 import '../../storage/local_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -107,34 +108,41 @@ class _StageDetailState extends State<StageDetail> {
                   SizedBox(height: 12),
                   Text("Date: ${DateFormat.yMd().format(stage!.timestamp)}"),
                   if (!initialStage)
-                  Row(
-                    children: [
-                      ElevatedButton(
-                       onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => StageEdit(stage: stage!)),
-                          );
-                          if (result == true) {
-                            _reloadStage();
-                            setState(() {
-                              edited = true;
-                            });
+                  Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => StageEdit(stage: stage!)),
+                            );
+                            if (result == true) {
+                              _reloadStage();
+                              setState(() {
+                                edited = true;
+                              });
+                            }
+                          },
+                          label: const Text('edit'),
+                          icon: const Icon(Icons.edit),
+                        ),
+                        SizedBox(width: 4.0),
+                        DeleteDialog(
+                          objectName: stage!.name!, 
+                          onConfirm: () async {
+                            await _localStorage.open('wip_tracker.db');
+                            await _localStorage.deleteStage(stage!.id!);
+                            if (context.mounted) {
+                              context.goNamed('projects', pathParameters: {'pid': stage!.pid.toString()});
+                            }
                           }
-                        },
-                        child: const Text('edit'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _localStorage.open('wip_tracker.db');
-                          await _localStorage.deleteStage(stage!.id!);
-                          if (context.mounted) {
-                            context.goNamed('projects', pathParameters: {'pid': stage!.pid.toString()});
-                          }
-                        },
-                        child: const Text('delete'),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -52,7 +52,6 @@ class StageCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (stage.image != null) 
                   Container(
                     color: Colors.grey[300],
                     child: Column(
@@ -60,12 +59,14 @@ class StageCard extends StatelessWidget {
                         Divider(height: 1),
                         FittedBox(
                           clipBehavior: Clip.hardEdge,
-                          child: Image.file(
-                            width: 350,
-                            height: 175,
-                            File(stage.image!),
-                            fit: BoxFit.contain,
-                          ),
+                          child: stage.image != null
+                          ? Image.file(
+                              width: 350,
+                              height: 175,
+                              File(stage.image!),
+                              fit: BoxFit.contain,
+                            )
+                          : const Icon(Icons.image_not_supported, size: 175, color: Colors.grey),
                         ),
                         Divider(height: 1),
                       ],
