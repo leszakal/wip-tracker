@@ -17,19 +17,44 @@ class MyDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: Text('Placeholder',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold
-              )
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    size: 40,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Local User',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
           ListTile(
             title: const Text('Projects'),
+            leading: const Icon(Icons.list),
             onTap: () {
               // Update the state of the app.
               currentPage == 1 ? Navigator.pop(context) : context.go('/');
+            },
+          ),
+          Divider(),
+          ListTile(
+            title: const Text('Sign In'),
+            leading: const Icon(Icons.login),
+            onTap: () {
+              currentPage == 2 ? Navigator.pop(context) : context.go('/login');
             },
           ),
         ],
