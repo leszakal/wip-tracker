@@ -95,6 +95,7 @@ class ProjectFormState extends State<ProjectForm> {
         id: widget.formType == 'edit' ? widget.project!.id : null,
         title: _titleController.text,
         start: startDate,
+        lastModified: DateTime.now(),
         image: imagePath,
         description: _descController.text,
         notes: _notesController.text,
