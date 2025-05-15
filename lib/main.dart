@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wip_tracker/project/data/project.dart';
 import 'package:wip_tracker/project/widgets/project_detail.dart';
 // import 'package:firebase_core/firebase_core.dart';
 
 import 'project/widgets/project_list.dart';
-import 'project/widgets/project_add.dart';
 import 'stage/widgets/stage_detail.dart';
 // import 'firebase_options.dart';
 // import 'home.dart';
