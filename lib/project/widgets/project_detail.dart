@@ -145,32 +145,39 @@ class _ProjectDetailState extends State<ProjectDetail> {
                               : project!.tags![i]),
                     ],
                   ),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ProjectEdit(project: project!)),
-                          );
-                          if (result == true) {
-                            _reloadProject();
-                            _reloadStages();
+                  Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ProjectEdit(project: project!)),
+                            );
+                            if (result == true) {
+                              _reloadProject();
+                              _reloadStages();
+                            }
+                          },
+                          label: const Text('edit'),
+                          icon: const Icon(Icons.edit),
+                        ),
+                        SizedBox(width: 4.0),
+                        DeleteDialog(
+                          objectName: project!.title, 
+                          onConfirm: () async {
+                            await _localStorage.open('wip_tracker.db');
+                            await _localStorage.deleteProject(project!.id!);
+                            if (context.mounted) {
+                              context.pushReplacement('/', extra: true);
+                            }
                           }
-                        },
-                        child: const Text('edit'),
-                      ),
-                      DeleteDialog(
-                        objectName: project!.title, 
-                        onConfirm: () async {
-                          await _localStorage.open('wip_tracker.db');
-                          await _localStorage.deleteProject(project!.id!);
-                          if (context.mounted) {
-                            context.pushReplacement('/', extra: true);
-                          }
-                        }
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   Divider(height: 30.0),
                   Text(
@@ -217,7 +224,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   ),
                 ),
               )
-            : ListView.builder(
+            : ListView.separated(
                 padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
                 itemCount: stages!.length,
                 itemBuilder: (context, index) {
@@ -226,6 +233,18 @@ class _ProjectDetailState extends State<ProjectDetail> {
                     padding: EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 8.0),
                     child: StageCard(stage: stage),
                   );
+                },
+                separatorBuilder: (context, index) {
+                    return Container(
+                      width: double.infinity,
+                      height: 35,
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 1.5,
+                        height: double.infinity,
+                        color: Colors.black,
+                      ),
+                    );
                 },
               ),
 
@@ -262,7 +281,36 @@ class _ProjectDetailState extends State<ProjectDetail> {
                         }
                         return GestureDetector(
                           onTap: () {
-                            // Optional: implement full-screen view later
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                insetPadding: EdgeInsets.all(10),
+                                child: GestureDetector(
+                                  onTap: () => Navigator.pop(context),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: FileImage(File(stage.image!)), 
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 10.0,
+                                        right: 10.0,
+                                        child: IconButton(
+                                          onPressed: () => Navigator.pop(context), 
+                                          icon: Icon(Icons.close, color: Colors.white, size: 30),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                           child: ClipRect(
                             child: Image.file(
