@@ -9,12 +9,14 @@ class Project {
   final List<String>? tags;
   final List<Stage>? stages;
   final DateTime start;
+  final DateTime lastModified;
   final DateTime? end;
   final bool complete;
 
   Project({
     required this.title,
     required this.start,
+    required this.lastModified,
     this.id,
     this.image,
     this.description,
@@ -29,6 +31,7 @@ class Project {
     return {
       'title': title,
       'start': start.millisecondsSinceEpoch,
+      'lastModified': lastModified.millisecondsSinceEpoch,
       'image': image,
       'description': description,
       'notes': notes,
