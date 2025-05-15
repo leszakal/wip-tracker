@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import '../data/project.dart';
-import 'project_form.dart';
+import '../data/stage.dart';
+import 'stage_form.dart';
 
-class ProjectEdit extends StatefulWidget {
-  const ProjectEdit({super.key, required this.project});
-  final String title = 'Edit Project';
-  final Project project;
+class StageEdit extends StatefulWidget {
+  const StageEdit({super.key, required this.stage});
+  final String title = 'Edit Stage';
+  final Stage stage;
 
   @override
-  State<ProjectEdit> createState() => _ProjectEditState();
+  State<StageEdit> createState() => _StageEditState();
 }
 
-class _ProjectEditState extends State<ProjectEdit> {
-  final GlobalKey<ProjectFormState> _projectFormKey = GlobalKey<ProjectFormState>();
+class _StageEditState extends State<StageEdit> {
+  final GlobalKey<StageFormState> _stageFormKey = GlobalKey<StageFormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,12 +23,12 @@ class _ProjectEditState extends State<ProjectEdit> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          child: ProjectForm(key: _projectFormKey, formType: 'edit', project: widget.project),
+          child: StageForm(key: _stageFormKey, formType: 'edit', stage: widget.stage, pid: widget.stage.pid),
         )
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await _projectFormKey.currentState?.submitForm().then((value) {
+          await _stageFormKey.currentState?.submitForm().then((value) {
             if (value == true && context.mounted) {
               Navigator.pop(context, true);
             }

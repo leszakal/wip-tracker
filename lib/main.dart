@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:wip_tracker/project/widgets/project_detail.dart';
 // import 'package:firebase_core/firebase_core.dart';
 
 import 'project/widgets/project_list.dart';
-import 'project/widgets/project_add.dart';
+import 'stage/widgets/stage_detail.dart';
 // import 'firebase_options.dart';
 // import 'home.dart';
 
@@ -18,11 +19,32 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const ProjectList(),
+      builder: (context, state) {
+        if (state.extra != null) {
+          return ProjectList(reload: state.extra as bool);
+        }
+        else {
+          return ProjectList();
+        }
+      }
     ),
     GoRoute(
-      path: '/add-project',
-      builder: (context, state) => const ProjectAdd(),
+      name: 'projects',
+      path: '/projects/:pid',
+      builder: (context, state) {
+        final projectId = int.parse(state.pathParameters['pid']!);
+        return ProjectDetail(projectId: projectId);
+      },
+      routes: [
+        GoRoute(
+          name: 'stages',
+          path: 'stages/:sid',
+          builder: (context, state) {
+            final stageId = int.parse(state.pathParameters['sid']!);
+            return StageDetail(stageId: stageId);
+          },
+        ),
+      ]
     ),
   ],
 );

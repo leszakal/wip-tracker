@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../project/data/project.dart';
+import '../stage/data/stage.dart';
 
 class LocalStorage {
   late Database db;
@@ -24,8 +25,22 @@ class LocalStorage {
             description TEXT, 
             notes TEXT,
             start INTEGER NOT NULL,
+            lastModified INTEGER NOT NULL,
             end INTEGER,
             complete INTEGER
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE stages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            name TEXT,
+            timestamp INTEGER NOT NULL,
+            description TEXT,
+            notes TEXT,
+            image TEXT,
+            FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
           )
         ''');
 
@@ -58,8 +73,8 @@ class LocalStorage {
   }
 
   // https://docs.flutter.dev/cookbook/persistence/sqlite
-  Future<List<Project>> getProjects() async {
-    final List<Map<String, Object?>> projectMaps = await db.query('projects', orderBy: 'start DESC');
+  Future<List<Project>> getProjects(String field, String sort) async {
+    final List<Map<String, Object?>> projectMaps = await db.query('projects', orderBy: '$field $sort');
     if (projectMaps.isEmpty) {
       return [];
     }
@@ -67,15 +82,44 @@ class LocalStorage {
     return [
       for (final {'id': id as int, 'title': title as String, 'image': image as String?, 
         'description': description as String?, 'notes': notes as String?,
-        'start': start as int, 'end': end as int?, 'complete': complete as int,
+        'start': start as int, 'end': end as int?, 'lastModified': lastModified as int,
+        'complete': complete as int,
         } in projectMaps)
       Project(
         id: id, title: title, image: image, description: description, notes: notes,
         start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
-        complete: complete == 1 ? true : false, tags: await getProjectTags(id),
+        lastModified: DateTime.fromMillisecondsSinceEpoch(lastModified), complete: complete == 1 ? true : false, 
+        tags: await getProjectTags(id),
       ),
     ];
   }
+
+  Future<List<Project>> searchProjects(String query) async {
+    query = query.toLowerCase();
+
+    final List<Map<String, Object?>> resultsMaps = await db.rawQuery('''
+    SELECT DISTINCT projects.* FROM projects
+    LEFT JOIN project_tags ON projects.id = project_tags.project_id
+    LEFT JOIN tags ON project_tags.tag_id = tags.id
+    WHERE LOWER(projects.title) LIKE ? OR LOWER(tags.name) LIKE ?
+  ''', ['%$query%', '%$query%']);
+
+
+    return [
+      for (final {'id': id as int, 'title': title as String, 'image': image as String?, 
+        'description': description as String?, 'notes': notes as String?,
+        'start': start as int, 'end': end as int?, 'lastModified': lastModified as int,
+        'complete': complete as int,
+        } in resultsMaps)
+      Project(
+        id: id, title: title, image: image, description: description, notes: notes,
+        start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
+        lastModified: DateTime.fromMillisecondsSinceEpoch(lastModified), complete: complete == 1 ? true : false, 
+        tags: await getProjectTags(id),
+      ),
+    ];
+  }
+
 
   Future<Project?> getProjectById(int pid) async {
     final List<Map<String, Object?>> projectMaps = await db.query(
@@ -89,14 +133,16 @@ class LocalStorage {
     }
     
     final {'id': id as int, 'title': title as String, 'image': image as String?, 
-      'description': description as String?, 'notes': notes as String?,
-      'start': start as int, 'end': end as int?, 'complete': complete as int,
+        'description': description as String?, 'notes': notes as String?,
+        'start': start as int, 'end': end as int?, 'lastModified': lastModified as int,
+        'complete': complete as int,
     } = projectMaps[0];
 
     return Project(
       id: id, title: title, image: image, description: description, notes: notes,
-      start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
-      complete: complete == 1 ? true : false, tags: await getProjectTags(id),
+        start: DateTime.fromMillisecondsSinceEpoch(start), end: end == null ? null : DateTime.fromMillisecondsSinceEpoch(end), 
+        lastModified: DateTime.fromMillisecondsSinceEpoch(lastModified), complete: complete == 1 ? true : false, 
+        tags: await getProjectTags(id),
     );
   }
 
@@ -126,6 +172,148 @@ class LocalStorage {
       'projects',
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> _updateProjectModifiedTime(int projectId) async {
+    await db.update(
+      'projects',
+      {'lastModified': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [projectId],
+    );
+  }
+
+  Future<int> insertStage(Stage stage) async {
+    await _updateProjectModifiedTime(stage.pid);
+    return await db.insert(
+      'stages',
+      stage.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updateStage(Stage stage) async {
+    if (stage.id == null) return;
+    await db.update(
+      'stages',
+      stage.toMap(),
+      where: 'id = ?',
+      whereArgs: [stage.id],
+    );
+    await _updateProjectModifiedTime(stage.pid);
+  }
+
+  Future<void> deleteStage(int id) async {
+    await db.delete(
+      'stages',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Stage>> getStagesForProject(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+    );
+
+    if (stageMaps.isEmpty) {
+      return [];
+    }
+
+    return [
+      for (final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+        'timestamp': timestamp as int, 'description': description as String?,
+        'notes': notes as String?, 'image': image as String?,
+      } in stageMaps)
+      Stage(
+        id: id, pid: pid, name: name, 
+        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+        description: description, notes: notes, image: image,
+      ),
+    ];
+  }
+
+  Future<int?> getInitialStage(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'id ASC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+    return stageMaps[0]['id'] as int;
+  }
+
+  Future<int?> getLatestStageId(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+    return stageMaps[0]['id'] as int;
+  }
+
+  Future<Stage?> getLatestStageObject(int projectId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'project_id = ?',
+      whereArgs: [projectId],
+      orderBy: 'timestamp DESC',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+
+    final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+      'timestamp': timestamp as int, 'description': description as String?,
+      'notes': notes as String?, 'image': image as String?,
+    } = stageMaps[0];
+
+    return Stage(
+      id: id, pid: pid, name: name, 
+      timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+      description: description, notes: notes, image: image,
+    );
+  }
+
+  Future<Stage?> getStageById(int stageId) async {
+    final List<Map<String, Object?>> stageMaps = await db.query(
+      'stages',
+      where: 'id = ?',
+      whereArgs: [stageId],
+      orderBy: 'id',
+      limit: 1,
+    );
+
+    if (stageMaps.isEmpty) {
+      return null;
+    }
+   
+    final {'id': id as int, 'project_id': pid as int, 'name': name as String?,
+      'timestamp': timestamp as int, 'description': description as String?,
+      'notes': notes as String?, 'image': image as String?,
+    } = stageMaps[0];
+
+    return Stage(
+      id: id, pid: pid, name: name, 
+      timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+      description: description, notes: notes, image: image,
     );
   }
 

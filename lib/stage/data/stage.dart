@@ -1,17 +1,31 @@
 class Stage {
-  final int id;
-  final String title;
-  final String description;
-  final String notes;
+  final int? id;
+  final int pid;
+  final String? name;
   final DateTime timestamp;
-  final String imageURL;
+  final String? description;
+  final String? notes;
+  final String? image;
 
-  Stage(
+  Stage({
+    required this.timestamp,
+    required this.pid,
     this.id,
-    this.title,
+    this.name,
     this.description,
     this.notes,
-    this.timestamp,
-    this.imageURL,
-  );
+    this.image,
+  });
+
+  Map<String, Object?> toMap() {
+    return {
+      'name': name,
+      'project_id': pid,
+      'timestamp': timestamp.millisecondsSinceEpoch,
+      'image': image,
+      'description': description,
+      'notes': notes,
+    };
+  }
+
 }
