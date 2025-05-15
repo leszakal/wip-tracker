@@ -9,7 +9,7 @@ class DeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton.icon(
+    return OutlinedButton.icon(
       onPressed:
           () => showDialog<String>(
             context: context,
@@ -34,6 +34,10 @@ class DeleteDialog extends StatelessWidget {
           ),
       label: const Text('Delete'),
       icon: const Icon(Icons.delete),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.red[800],
+        side: BorderSide(color: Colors.red[800]!),
+      ),
     );
   }
 }
