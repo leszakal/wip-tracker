@@ -40,7 +40,7 @@ class StageCard extends StatelessWidget {
                               children: [
                                 stage.name!.isNotEmpty 
                                 ? Text(stage.name!, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)) 
-                                : Text('Stage ${stage.id}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                                : Text('Untitled Stage', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                                 Text(DateFormat.yMd().format(stage.timestamp).toString()),
                               ],
                             ),

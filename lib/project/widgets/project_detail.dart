@@ -122,7 +122,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                     ),
                   SizedBox(height: 16),
                   Text(
-                    project!.description != null ? '${project!.description}' : 'No description',
+                    project!.description != "" ? '${project!.description}' : 'No description',
                     style: const TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 12),

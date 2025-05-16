@@ -23,7 +23,7 @@ class StageCardMini extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                title: stage.name!.isNotEmpty ? Text(stage.name!) : Text('Stage ${stage.id}'),
+                title: stage.name!.isNotEmpty ? Text(stage.name!) : Text('Untitled Stage'),
                 subtitle: Text(DateFormat.yMd().format(stage.timestamp).toString()),
                 trailing: 
                   stage.image != null 

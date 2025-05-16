@@ -67,7 +67,7 @@ class _StageDetailState extends State<StageDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(stage?.name ?? 'Loading stage...'),
+        title: stage?.name != "" ? Text(stage?.name ?? 'Loading stage...') : Text('Untitled Stage'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         leading: BackButton(
           onPressed: () {

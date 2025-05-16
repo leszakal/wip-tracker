@@ -61,7 +61,7 @@ class ProjectCard extends StatelessWidget {
                         Divider(height: 1),
                         FittedBox(
                           clipBehavior: Clip.hardEdge,
-                          child: project.image != null
+                          child: latestStage.image != null
                           ? Image.file(
                               width: 350,
                               height: 180,
@@ -76,7 +76,7 @@ class ProjectCard extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 12.0, top: 8.0),
-                    child: Text('Latest stage: ${latestStage.name!}'),
+                    child: latestStage.name != null ? Text('Latest stage: ${latestStage.name!}') : Text('Latest stage: Untitled Stage'),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 12.0),
