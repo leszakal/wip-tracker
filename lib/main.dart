@@ -39,6 +39,9 @@ final _router = GoRouter(
       path: '/projects/:pid',
       builder: (context, state) {
         final projectId = int.parse(state.pathParameters['pid']!);
+        if (state.extra == true) {
+          return ProjectDetail(projectId: projectId, reload: true);
+        }
         return ProjectDetail(projectId: projectId);
       },
       routes: [

@@ -137,7 +137,7 @@ class _StageDetailState extends State<StageDetail> {
                             await _localStorage.open('wip_tracker.db');
                             await _localStorage.deleteStage(stage!.id!);
                             if (context.mounted) {
-                              context.goNamed('projects', pathParameters: {'pid': stage!.pid.toString()});
+                              context.pushReplacementNamed('projects', pathParameters: {'pid': stage!.pid.toString()}, extra: true);
                             }
                           }
                         ),
