@@ -1,3 +1,6 @@
+# Ignore APK
+*.apk
+
 # Firebase related
 .firebase/
 google-services.json
