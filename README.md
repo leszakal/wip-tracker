@@ -1,16 +1,11 @@
-# wip_tracker
+# WIP-Tracker
 
-A new Flutter project.
+An app that helps you keep track of your ongoing projects. Created for the CINS 467 (Web and Mobile App Development) course at CSU, Chico.
 
-## Getting Started
+## Usage Overview
 
-This project is a starting point for a Flutter application.
+Users can add projects including an image, start date, title, description, notes, and tags. As progress is made on a project, a stage can be added to it, allowing users to track their work over time. Projects and stages can be edited or deleted by using the buttons on their respective detail pages.
 
-A few resources to get you started if this is your first Flutter project:
+The search bar on the project list page can be used to filter projects by title or tag. The list page can also be sorted based on either the last modified date or the project start date.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Currently, the only online functionality is user authentication via Firebase. The login page can be found in the drawer. Once logged in, the drawer should change to show the user's email and switch the sign in navigation item to a sign out one.
