@@ -8,4 +8,4 @@ Users can add projects including an image, start date, title, description, notes
 
 The search bar on the project list page can be used to filter projects by title or tag. The list page can also be sorted based on either the last modified date or the project start date.
 
-Currently, the only online functionality is user authentication via Firebase. The login page can be found in the drawer. Once logged in, the drawer should change to show the user's email and switch the sign in navigation item to a sign out one.
+Currently, only the local storage is complete with data being stored via sqflite. The only online functionality is user authentication via Firebase. The login page can be found in the drawer. Once logged in, the drawer should change to show the user's email and switch the sign in navigation item to a sign out one.
